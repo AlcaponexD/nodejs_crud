@@ -9,7 +9,7 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.createTable("wallet", {
+    await queryInterface.createTable("wallets", {
       // Model attributes are defined here
       id: {
         type: DataTypes.INTEGER(11),
@@ -41,6 +41,6 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.dropTable("wallet");
+    await queryInterface.dropTable("wallets");
   },
 };

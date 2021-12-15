@@ -20,8 +20,5 @@ const Job = connection.define("jobs", {
   }
 });
 
-Job.sync({ force: false }).then(() => {
-  console.log("Criou as Job");
-});
 
 module.exports = Job;

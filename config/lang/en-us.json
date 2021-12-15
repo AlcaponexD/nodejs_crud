@@ -3,5 +3,8 @@
     "password_incorrect" : "Password incorrect",
     "invalid_token" : "Invalid token",
     "token_not_provided" : "Token not provided",
-    "email_not_found" : "Email not found"
+    "email_not_found" : "Email not found",
+    "404" : "Not found",
+    "input_incorrect": "Invalid request, wrong input",
+    "success" : "success"
 }

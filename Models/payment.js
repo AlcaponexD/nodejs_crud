@@ -72,8 +72,4 @@ Payment.belongsTo(User,{
   foreignKey: "user_id",
 });
 
-Payment.sync({ force: false }).then(() => {
-  console.log("Criou as Payment");
-});
-
 module.exports = Payment;

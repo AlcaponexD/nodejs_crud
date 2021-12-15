@@ -42,8 +42,5 @@ User.hasMany(Payment, {
 });
 Payment.belongsTo(User);
 
-Wallet.sync({ force: false }).then(() => {
-  console.log("Criou as Wallet");
-});
 
 module.exports = Wallet;
