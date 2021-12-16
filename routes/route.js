@@ -25,5 +25,7 @@ router.put("/wallet/:id", usercheck, walletController.update);
 router.delete("/wallet/:id", usercheck, walletController.destroy);
 router.get("/wallet/coins/public", usercheck, walletController.coins);
 router.get("/wallet/total/all", usercheck, walletController.totals);
+router.get("/wallet", usercheck, walletController.index);
+
 
 module.exports = router;

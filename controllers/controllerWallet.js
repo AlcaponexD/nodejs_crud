@@ -142,4 +142,11 @@ module.exports = {
     }
     res.send({ total });
   },
+  async index(req, res) {
+    var wallts = await wallet.findAll({
+      where: { user_id : req.user.id}
+    })
+
+    res.send(wallts);
+  }
 };
