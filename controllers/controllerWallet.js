@@ -1,3 +1,5 @@
+const https = require("https");
+
 const config = require("../config/config");
 
 const wallet = require("../Models/wallet");
@@ -84,15 +86,60 @@ module.exports = {
       },
     });
 
-    if(del){
-        del.destroy();
-        res.send({
-            messsage : config.label("success"),
-        })
-    }else{
-        res.status(404).send({
-            message : config.label("404")
-        })
+    if (del) {
+      del.destroy();
+      res.send({
+        messsage: config.label("success"),
+      });
+    } else {
+      res.status(404).send({
+        message: config.label("404"),
+      });
     }
+  },
+  async totals(req, res) {
+    const wallets = await wallet.findAll({
+      where: {
+        user_id: req.user.id,
+      },
+    });
+
+    const fetch = (url) => {
+      // Return a promise
+      return new Promise((resolve, reject) => {
+        // Call the https.get function
+        https
+          .get(url, (res) => {
+            res.setEncoding("utf-8");
+            // Set the event listener
+            res.on("data", function (data) {
+              // Here the actual data event is _happening_. Now we have the return value
+              resolve({
+                data : data,
+                status : res.statusCode
+              });
+            });
+          })
+          .on("error", function (e) {
+            console.log(e)
+            reject(e);
+          });
+      });
+    };
+
+    var total = 0;
+    for (const wallet of wallets) {
+      const coin = wallet.coin;
+      const quantity = wallet.quantity;
+      const res = await fetch(
+        `https://www.mercadobitcoin.net/api/${coin}/ticker/`
+      );
+      console.log(res)
+     if(res.status == '200'){
+      const json = JSON.parse(res.data);
+      total = total + (quantity * json.ticker.last);
+     }
+    }
+    res.send({ total });
   },
 };
