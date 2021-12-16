@@ -18,6 +18,7 @@ router.post("/login", loginController.login);
  */
 
 router.put("/user", usercheck, userController.update);
+router.get("/user", usercheck, userController.index);
 
 //Carteiras
 router.post("/wallet", usercheck, walletController.create);

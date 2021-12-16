@@ -77,7 +77,7 @@ module.exports = {
         if (!match) {
           res.status(422).send({
             error: true,
-            message: config.label('password_incorrect'),
+            message: config.label("password_incorrect"),
           });
         }
         var salt = bcrypt.genSaltSync(10);
@@ -105,5 +105,14 @@ module.exports = {
         message: config.label("error_update"),
       });
     }
+  },
+  async index(req, res) {
+    var result = await user.findOne({
+      where: {
+        id: req.user.id,
+      },
+    });
+    result.password = '******'
+    res.send(result);
   },
 };
