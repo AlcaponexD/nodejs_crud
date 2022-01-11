@@ -3,7 +3,7 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return Promise.all([
-      queryInterface.addColumn("wallet", "user_id", {
+      queryInterface.addColumn("wallets", "user_id", {
         type: Sequelize.INTEGER,
         references: {
           model: "users",
@@ -18,6 +18,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return Promise.all([queryInterface.removeColumn("wallet", "user_id")]);
+    return Promise.all([queryInterface.removeColumn("wallets", "user_id")]);
   },
 };
