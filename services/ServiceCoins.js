@@ -1,6 +1,7 @@
 const https = require("https");
 
 const config = require("../config/config");
+const cript_prices = require("../Models/criptPrice");
 
 const fetch = (url) => {
   // Return a promise
@@ -16,7 +17,13 @@ const fetch = (url) => {
           body += data;
         });
         res.on("end", function () {
-          var fbResponse = JSON.parse(body);
+          if (body) {
+            try {
+              var fbResponse = JSON.parse(body);
+            } catch (error) {
+              var fbResponse = false;
+            }
+          }
           resolve({
             data: fbResponse,
             status: res.statusCode,
@@ -41,29 +48,65 @@ module.exports = {
         var res = await fetch(
           `https://api.coingecko.com/api/v3/coins/markets?page${page}&per_page=500&vs_currency=usd`
         );
-        if (res.status == "200") {
-          console.log(res.data);
-          for (var i in res.data) {
-            if (res.data[i].market_cap > 400000000) {
-              data.push(res.data[i]);
-            } else {
-              pagination = false;
+        if (res.data) {
+          if (res.status == "200") {
+            console.log(res.data);
+            for (var i in res.data) {
+              if (res.data[i].market_cap > 400000000) {
+                data.push({
+                  name: res.data[i].name,
+                  symbol: res.data[i].symbol,
+                  current_price: res.data[i].current_price,
+                });
+              } else {
+                pagination = false;
+              }
             }
+            page = page + 1;
           }
-          page = page + 1;
+        } else {
+          pagination = false;
         }
       } catch (e) {
         console.log(e.message);
       }
+      //Time slepp to not ultrapassing 50 req/min
+      await new Promise((r) => setTimeout(r, 1500));
     }
-    var end = new Date();
+    //Save to database
+    var data_insert = [];
+    try {
+      //Verify if exists on database
+      for (var i in data) {
+        const update = await cript_prices.findOne({
+          where: {
+            symbol: data[i].symbol,
+          },
+        });
+        if (update) {
+          update.set(data[i]);
+          await update.save();
+        } else {
+          //create array from builkcreate
+          data_insert.push(data[i]);
+        }
+      }
 
-    //Pega diferenca
-    var difference = end.getTime() - start.getTime();
-    difference = difference != 0 ? difference / 1000 : difference;
-    console.log(difference);
+      var save = await cript_prices.bulkCreate(data_insert, {
+        updateOnDuplicate: ["symbol"],
+      });
+      var end = new Date();
 
-    console.log(data.length);
-    return data;
+      //Pega diferenca
+      var difference = end.getTime() - start.getTime();
+      difference = difference != 0 ? difference / 1000 : difference;
+      console.log(difference);
+
+      console.log(data.length);
+
+      return data_insert;
+    } catch (e) {
+      return e.message;
+    }
   },
 };
