@@ -1,7 +1,7 @@
 const https = require("https");
 
 const config = require("../config/config");
-
+const Cript = require("../Models/criptPrice");
 const wallet = require("../Models/wallet");
 
 module.exports = {
@@ -74,8 +74,34 @@ module.exports = {
     }
   },
   async coins(req, res) {
+    let pageAsNumber = Number.parseInt(req.query.page);
+    let per_pageAsNumber = Number.parseInt(req.query.per_page);
+
+    //Primeira pagina da paginacao
+    let page = 0;
+    if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
+      //Trata pagina 1 para começar da primeira no banco 0
+      if (pageAsNumber == 1) {
+        pageAsNumber = 0;
+      }
+      page = pageAsNumber;
+    }
+
+    //Tamanho padrao sem parametros
+    let size = 10;
+    if (!Number.isNaN(per_pageAsNumber) && per_pageAsNumber > 0) {
+      size = per_pageAsNumber;
+    }
+
+    //Trata page = 1 transforma no 0 pro db
+
+    const criptos = await Cript.findAndCountAll({
+      limit: size,
+      offset: page * size,
+    });
     res.send({
-      coins: ["BTC", "ETH"],
+      content: criptos.rows,
+      totalPages: Math.ceil(criptos.count / size),
     });
   },
   async destroy(req, res) {
@@ -98,55 +124,37 @@ module.exports = {
     }
   },
   async totals(req, res) {
-    const wallets = await wallet.findAll({
-      where: {
-        user_id: req.user.id,
-      },
-    });
-
-    const fetch = (url) => {
-      // Return a promise
-      return new Promise((resolve, reject) => {
-        // Call the https.get function
-        https
-          .get(url, (res) => {
-            res.setEncoding("utf-8");
-            // Set the event listener
-            res.on("data", function (data) {
-              // Here the actual data event is _happening_. Now we have the return value
-              resolve({
-                data : data,
-                status : res.statusCode
-              });
-            });
-          })
-          .on("error", function (e) {
-            console.log(e)
-            reject(e);
-          });
+    try {
+      const wallets = await wallet.findAll({
+        where: {
+          user_id: req.user.id,
+        },
       });
-    };
 
-    var total = 0;
-    for (const wallet of wallets) {
-      const coin = wallet.coin;
-      const quantity = wallet.quantity;
-      const res = await fetch(
-        `https://www.mercadobitcoin.net/api/${coin}/ticker/`
-      );
-      console.log(res)
-     if(res.status == '200'){
-      const json = JSON.parse(res.data);
-      total = total + (quantity * json.ticker.last);
-     }
+      var total = 0;
+      for (const wallet of wallets) {
+        const { coin, quantity } = wallet;
+        var cript = await Cript.findOne({
+          where: {
+            symbol: coin,
+          },
+        });
+        total = total + quantity * cript.current_price;
+      }
+      res.send({ total, type: "USD" });
+    } catch (error) {
+      res.status(500).send({ 
+        error : true,
+        message : config.label("error_sum_wallets")
+      })
+
     }
-    res.send({ total });
   },
   async index(req, res) {
     var wallts = await wallet.findAll({
-      where: { user_id : req.user.id}
-    })
+      where: { user_id: req.user.id },
+    });
 
     res.send(wallts);
-  }
+  },
 };
