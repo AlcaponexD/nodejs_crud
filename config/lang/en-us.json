@@ -6,5 +6,6 @@
     "email_not_found" : "Email not found",
     "404" : "Not found",
     "input_incorrect": "Invalid request, wrong input",
-    "success" : "success"
+    "success" : "success",
+    "error_sum_wallets" : "Error on your wallets, delete and create wallets again, if not resolve your issue send a ticket to us"
 }
