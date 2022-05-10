@@ -11,7 +11,7 @@ module.exports = {
     //Create
 
     if (!req.body.password && !req.body.name && !req.body.email) {
-      res.status(422).send({
+      return res.status(422).send({
         error: true,
         message: "The next fields are required -> name,email,password",
       });
@@ -24,7 +24,7 @@ module.exports = {
       });
 
       if (email_exist) {
-        res.status(422).send({
+        return res.status(422).send({
           error: true,
           message: "The email already exists",
         });
@@ -44,12 +44,12 @@ module.exports = {
         expiresIn: config.jwt_expiration, // expires in 12hours
       });
 
-      res.send({
+      return res.send({
         auth: true,
         token: token,
       });
     } catch (e) {
-      res.status(500).send({
+      return res.status(500).send({
         error: true,
         message: e.message,
       });
@@ -112,7 +112,7 @@ module.exports = {
         id: req.user.id,
       },
     });
-    result.password = '******'
+    result.password = "******";
     res.send(result);
   },
 };

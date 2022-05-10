@@ -21,6 +21,7 @@ module.exports = {
             error: true,
             message: config.label("email_not_found"),
           });
+          return
         }
 
         //Check hash
@@ -41,14 +42,15 @@ module.exports = {
             token: token,
           });
         } else {
-          res.status(401).send({
+          res.status(403).send({
             auth: false,
             message: config.label("password_incorrect"),
           });
+          return
         }
       }
     } catch (e) {
-      res.status(500).send({
+      res.status(500).json({
         error : true,
         message: e.message
       })

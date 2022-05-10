@@ -143,18 +143,36 @@ module.exports = {
       }
       res.send({ total, type: "USD" });
     } catch (error) {
-      res.status(500).send({ 
-        error : true,
-        message : config.label("error_sum_wallets")
-      })
-
+      res.status(500).send({
+        error: true,
+        message: config.label("error_sum_wallets"),
+      });
     }
   },
   async index(req, res) {
-    var wallts = await wallet.findAll({
+    var results = [];
+    const wallts = await wallet.findAll({
       where: { user_id: req.user.id },
     });
 
-    res.send(wallts);
+    var promises = wallts.map(function (item) {
+      // return array of promises
+      // return the promise:
+      return Cript.findOne({
+        where: {
+          symbol: item.coin,
+        },
+      }).then(function (res) {
+        console.log(res.dataValues);
+        item.total = item.quantity * res.dataValues.current_price;
+        results.push(item);
+      });
+    });
+    Promise.all(promises).then(function () {
+      //do something with the finalized list of items here
+      res.send(results);
+    });
+
+    
   },
 };
